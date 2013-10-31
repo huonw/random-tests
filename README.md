@@ -1,5 +1,7 @@
 # Random tests
 
+[![Build Status](https://travis-ci.org/huonw/random-tests.png)](https://travis-ci.org/huonw/random-tests)
+
 Probabilistic tests for the distributions in Rust's standard
 library. These are mostly significance level tests, and so will fail
 occasionally (assuming the distributions are implemented
@@ -19,3 +21,5 @@ higher is better (but slower).
 - larger variety of tests (currently just performs t-tests on a set of
   sample means and sample observations to check these are close to the
   expected values)
+- should probably use TestU01 and/or Diehard[er] instead of/as well as
+  hand-written pure Rust tests.
