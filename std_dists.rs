@@ -4,15 +4,16 @@ use std::rand::{Rng, StdRng};
 use std::rand::distributions::Sample;
 
 #[cfg(test)]
-use std::rand::distributions;
-#[cfg(test)]
-use std::rand::distributions::RandSample;
+use std::rand::distributions::{RandSample, Exp1, StandardNormal};
 
+use kolmogorov_smirnov::ks_unif_test;
 use t_test;
 
 pub static SIG: f64 = 0.01;
 static NUM_MEANS: uint = 10000;
 static EACH_MEAN: uint = 10000;
+
+static KS_SIZE: uint = 10_000_000;
 
 /// Convert ∑ X_i, ∑ X_i^2 of a sample of size `n` into sample mean and
 /// variance.
@@ -95,6 +96,30 @@ pub fn t_test_mean_var<S: Sample<f64>>(name: &str,
     }
 }
 
+/// Perform a Kolmogorov-Smirnov test that samples from `dist` are
+/// actually from the distribution with the cumulative distribution
+/// function `cdf`.
+pub fn ks_test_dist<S: Sample<f64>>(name: &str,
+                                    mut dist: S,
+                                    cdf: &fn(f64) -> f64) {
+    let mut rng = StdRng::new();
+    let mut v = range(0, KS_SIZE).map(|_| cdf(dist.sample(&mut rng))).to_owned_vec();
+    let pvalue = ks_unif_test(v);
+
+    if pvalue < SIG {
+        fail!("{} failed: p = {} < {}", name, pvalue, SIG);
+    }
+}
+
+struct DirectExpSample;
+impl Sample<f64> for DirectExpSample {
+    fn sample<R: Rng>(&mut self, r: &mut R) -> f64 { *r.gen::<Exp1>() }
+}
+struct DirectNormSample;
+impl Sample<f64> for DirectNormSample {
+    fn sample<R: Rng>(&mut self, r: &mut R) -> f64 { *r.gen::<StandardNormal>() }
+}
+
 
 #[test]
 fn t_test_unif() {
@@ -104,21 +129,26 @@ fn t_test_unif() {
 
 #[test]
 fn t_test_exp() {
-    struct DirectExpSample;
-    impl Sample<f64> for DirectExpSample {
-        fn sample<R: Rng>(&mut self, r: &mut R) -> f64 { *r.gen::<distributions::Exp1>() }
-    }
-
     t_test_mean_var("Exp(1)", DirectExpSample,
                     1., 1.);
 }
 #[test]
 fn t_test_norm() {
-    struct DirectNormSample;
-    impl Sample<f64> for DirectNormSample {
-        fn sample<R: Rng>(&mut self, r: &mut R) -> f64 { *r.gen::<distributions::StandardNormal>() }
-    }
-
     t_test_mean_var("N(0, 1)", DirectNormSample,
                     0., 1.);
+}
+
+#[test]
+fn ks_test_unif() {
+    ks_test_dist("U(0, 1)", RandSample::<f64>, ::unif_cdf)
+}
+
+#[test]
+fn ks_test_exp() {
+    ks_test_dist("Exp(1)", DirectExpSample, ::exp_cdf)
+}
+
+#[test]
+fn ks_test_norm() {
+    ks_test_dist("N(0, 1)", DirectNormSample, ::normal_cdf)
 }

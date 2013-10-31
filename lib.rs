@@ -3,6 +3,7 @@
 extern mod extra;
 use std::num;
 
+pub mod kolmogorov_smirnov;
 pub mod t_test;
 
 pub mod std_dists;
