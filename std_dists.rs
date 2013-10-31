@@ -1,10 +1,10 @@
 /// Distributional tests for distributions in the standard lib
 use std::num;
 use std::rand::{Rng, StdRng};
-use std::rand::distributions::Sample;
+use std::rand::distributions::{Sample, Exp1, StandardNormal};
 
 #[cfg(test)]
-use std::rand::distributions::{RandSample, Exp1, StandardNormal};
+use std::rand::distributions::{RandSample};
 
 use kolmogorov_smirnov::ks_unif_test;
 use t_test;
