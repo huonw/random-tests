@@ -1,7 +1,13 @@
 /// Distributional tests for distributions in the standard lib
 use std::num;
-use std::rand::{Rng, StdRng, distributions};
-use std::rand::distributions::{Sample, RandSample};
+use std::rand::{Rng, StdRng};
+use std::rand::distributions::Sample;
+
+#[cfg(test)]
+use std::rand::distributions;
+#[cfg(test)]
+use std::rand::distributions::RandSample;
+
 use t_test;
 
 pub static SIG: f64 = 0.01;
