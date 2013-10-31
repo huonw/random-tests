@@ -9,7 +9,7 @@ correctly... if they aren't then it will hopefully fail always).
 
 Run with
 
-    rustc --test lib.rs && ./lib
+    rustc --opt-level=3 --test lib.rs && ./lib
 
 This can take a long time, since it uses a lot of random
 numbers. Adjust the constants in `std_dists` for more/fewer numbers,
