@@ -1,7 +1,7 @@
 /// Distributional tests for distributions in the standard lib
 use std::num;
 use std::rand::{Rng, StdRng};
-use std::rand::distributions::{Sample, Exp1, StandardNormal};
+use std::rand::distributions::{Sample, Exp1, StandardNormal, Gamma};
 
 #[cfg(test)]
 use std::rand::distributions::{RandSample};
@@ -138,6 +138,23 @@ fn t_test_norm() {
                     0., 1.);
 }
 
+fn test_gamma(shape: f64, scale: f64) {
+    t_test_mean_var(format!("Gamma({}, {})", shape, scale),
+                    Gamma::new(shape, scale),
+                    shape * scale, shape * scale * scale)
+}
+// separate to get fine-grained failures/parallelism.
+#[test]
+fn t_test_gamma_very_small() { test_gamma(0.001, 1.) }
+#[test]
+fn t_test_gamma_small() { test_gamma(0.4, 2.) }
+#[test]
+fn t_test_gamma_one() { test_gamma(1., 3.) }
+#[test]
+fn t_test_gamma_large() { test_gamma(2.5, 4.) }
+#[test]
+fn t_test_gamma_very_large() { test_gamma(1000., 5.) }
+
 #[test]
 fn ks_test_unif() {
     ks_test_dist("U(0, 1)", RandSample::<f64>, ::unif_cdf)
@@ -152,3 +169,6 @@ fn ks_test_exp() {
 fn ks_test_norm() {
     ks_test_dist("N(0, 1)", DirectNormSample, ::normal_cdf)
 }
+
+// Don't have the infrastructure (specifically, the CDF is awkward to
+// implement) for Kolmogorov-Smirnov of Gamma.
