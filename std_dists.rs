@@ -15,26 +15,23 @@ static EACH_MEAN: uint = 10000;
 
 static KS_SIZE: uint = 10_000_000;
 
-/// Convert ∑ X_i, ∑ X_i^2 of a sample of size `n` into sample mean and
-/// variance.
-fn centralise_sample_moments(s: f64, s2: f64, n: uint) -> (f64, f64) {
-    let n = n as f64;
-    let mu = s / n;
-    (mu, (s2 - s * mu) / (n - 1.))
-}
+static NUM_MOMENTS: uint = 3;
 
-/// Compute the sample mean and variance of a sample of size `count`
+/// Compute the first NUM_MOMENTS moments of a sample of size `count`
 /// from `dist` using `rng` as the source of randomness.
-fn mean_var<S: Sample<f64>, R: Rng>(rng: &mut R, dist: &mut S, count: uint) -> (f64, f64) {
-    let mut s = 0.;
-    let mut s2 = 0.;
+fn moments<S: Sample<f64>, R: Rng>(rng: &mut R,
+                                   dist: &mut S, count: uint) -> [f64, .. NUM_MOMENTS] {
+    let mut moms = [0., .. NUM_MOMENTS];
 
     for _ in range(0, count) {
         let v = dist.sample(rng);
-        s += v;
-        s2 += v * v;
+        let mut x = v;
+        for m in moms.mut_iter() {
+            *m = x;
+            x *= v;
+        }
     }
-    centralise_sample_moments(s, s2, count)
+    moms
 }
 
 /// Compute the mean and variance of a sample of size `num_means` of
@@ -45,51 +42,56 @@ fn mean_var<S: Sample<f64>, R: Rng>(rng: &mut R, dist: &mut S, count: uint) -> (
 ///
 /// Returns sample (mean, variance) for the mean and variance
 /// estimators respectively.
-fn mean_var_of_mean_var<S: Sample<f64>>(dist: &mut S,
-                                        each_mean: uint, num_means: uint) -> ((f64, f64),
-                                                                              (f64, f64)) {
+fn mean_var_of_moments<S: Sample<f64>>(dist: &mut S,
+                                       each_mean: uint,
+                                       num_means: uint) -> [(f64, f64), .. NUM_MOMENTS] {
     let mut rng = StdRng::new();
 
-    let mut s_m = 0.;
-    let mut s_v = 0.;
-    let mut s2_m = 0.;
-    let mut s2_v = 0.;
+    let mut mean_vars = [(0., 0.), .. NUM_MOMENTS];
+
     for _ in range(0, each_mean) {
-        let (m, v) = mean_var(&mut rng, dist, each_mean);
+        let mom = moments(&mut rng, dist, each_mean);
 
-        s_m += m;
-        s_v += v;
-
-        s2_m += m * m;
-        s2_v += v * v;
+        for (&(ref mut s, ref mut s2), &v) in mean_vars.mut_iter().zip(mom.iter()) {
+            *s += v;
+            *s2 += v * v;
+        }
     }
-    (centralise_sample_moments(s_m, s2_m, num_means),
-     centralise_sample_moments(s_v, s2_v, num_means))
+    // centralise the EX and EX^2 moments for each of the moment
+    // estimators of the distribution.
+    let n = num_means as f64;
+    for &(ref mut s, ref mut s2) in mean_vars.mut_iter() {
+        let mu = *s / n;
+        let var = (*s2 - *s * mu) / (n - 1.);
+
+        *s = mu;
+        *s2 = var;
+    }
+
+    mean_vars
 }
 
-/// Perform a t-test for the mean and variance of `dist` being equal
-/// to `expected_mean` and `expected_var` respectively. Fail!s when
-/// significant at the `SIG` level.
+/// Perform a t-test for the moments of `dist` being equal to the
+/// values in `expected`. Fail!s when the difference significant at
+/// the `SIG` level. (Note: this performs no corrections for multiple
+/// testing)
 pub fn t_test_mean_var<S: Sample<f64>>(name: &str,
                                        mut dist: S,
-                                       expected_mean: f64, expected_var: f64) {
-    let ((m_m, m_v),
-         (v_m, v_v)) = mean_var_of_mean_var(&mut dist, EACH_MEAN, NUM_MEANS);
+                                       expected: &[f64]) {
+    assert!(expected.len() >= NUM_MOMENTS);
 
-    let m_pvalue = t_test::t_test(m_m, num::sqrt(m_v), NUM_MEANS, expected_mean);
-    let v_pvalue = t_test::t_test(v_m, num::sqrt(v_v), NUM_MEANS, expected_var);
-
+    let moments = mean_var_of_moments(&mut dist, EACH_MEAN, NUM_MEANS);
     let mut msgs = ~[];
-    if m_pvalue < SIG {
-        msgs.push(format!("reject mean {} = {}, p = {} < {}",
-                          m_m, expected_mean,
-                          m_pvalue, SIG))
-    }
+    for (i, (&(mean, var), &expected)) in moments.iter().zip(expected.iter()).enumerate() {
+        let pvalue = t_test::t_test(mean, num::sqrt(var), NUM_MEANS, expected);
 
-    if v_pvalue < SIG {
-        msgs.push(format!("reject variance {} = {}, p = {} < {}",
-                          v_m, expected_var,
-                          v_pvalue, SIG))
+        if pvalue < SIG {
+            msgs.push(format!("reject E[X^{}] {} = {}, p = {} < {}",
+                              i + 1,
+                              mean, expected,
+                              pvalue, SIG))
+        }
+
     }
     if !msgs.is_empty() {
         fail!("{} failed: {}", name, msgs.connect(", "))
@@ -123,25 +125,56 @@ impl Sample<f64> for DirectNormSample {
 
 #[test]
 fn t_test_unif() {
+    let mut moments = [0., .. NUM_MOMENTS];
+    for (i, m) in moments.mut_iter().enumerate() {
+        // for U(0, 1), E[X^k] = 1 / (k + 1).
+        *m = 1. / (i as f64 + 2.);
+    }
+
     t_test_mean_var("U(0,1)", RandSample::<f64>,
-                    0.5, 1. / 12.);
+                    moments);
 }
 
 #[test]
 fn t_test_exp() {
+    let mut moments = [0., .. NUM_MOMENTS];
+    let mut prod = 1.;
+    for (i, m) in moments.mut_iter().enumerate() {
+        // for Exp(1), E[X^k] = k!
+        prod *= i as f64 + 1.;
+        *m = prod
+    }
     t_test_mean_var("Exp(1)", DirectExpSample,
-                    1., 1.);
+                    moments);
 }
 #[test]
 fn t_test_norm() {
+    let mut moments = [0., .. NUM_MOMENTS];
+    let mut prod = 1.;
+    for (i, m) in moments.mut_iter().enumerate() {
+        // for N(0, 1), E[X^odd] = 0, and E[X^k] = k!! (product of odd
+        // numbers up to k) (k even).
+        let k = i + 1;
+        if k % 2 == 0 { // only even moments are non-zero
+            prod *= k as f64 - 1.;
+            *m = prod;
+        }
+    }
     t_test_mean_var("N(0, 1)", DirectNormSample,
-                    0., 1.);
+                    moments);
 }
 
 fn test_gamma(shape: f64, scale: f64) {
+    let mut moments = [0., .. NUM_MOMENTS];
+    let mut current_moment = 1.;
+    for (i, m) in moments.mut_iter().enumerate() {
+        // E[X^k] = scale^k * shape * (shape + 1) * ... * (shape + (k - 1))
+        current_moment *= scale * (shape + i as f64);
+        *m = current_moment
+    }
     t_test_mean_var(format!("Gamma({}, {})", shape, scale),
                     Gamma::new(shape, scale),
-                    shape * scale, shape * scale * scale)
+                    moments)
 }
 // separate to get fine-grained failures/parallelism.
 #[test]
