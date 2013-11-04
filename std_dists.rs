@@ -178,9 +178,12 @@ fn test_gamma(shape: f64, scale: f64) {
 }
 // separate to get fine-grained failures/parallelism.
 #[test]
-fn t_test_gamma_very_small() { test_gamma(0.001, 1.) }
+fn t_test_gamma_very_small() {
+    // test_gamma(0.001, 1.); // Gamma(10) isn't very normal at all.
+    test_gamma(0.1, 1.)
+}
 #[test]
-fn t_test_gamma_small() { test_gamma(0.4, 2.) }
+fn t_test_gamma_small() { test_gamma(0.8, 2.) }
 #[test]
 fn t_test_gamma_one() { test_gamma(1., 3.) }
 #[test]
