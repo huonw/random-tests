@@ -85,8 +85,12 @@ pub fn t_test_mean_var<S: Sample<f64>>(name: &str,
     for (i, (&(mean, var), &expected)) in moments.iter().zip(expected.iter()).enumerate() {
         let pvalue = t_test::t_test(mean, num::sqrt(var), NUM_MEANS, expected);
 
+        info!("test {}: E[X^{}] = {} (expect {}), p = {}",
+              name, i + 1,
+              mean, expected, pvalue);
+
         if pvalue < SIG {
-            msgs.push(format!("reject E[X^{}] {} = {}, p = {} < {}",
+            msgs.push(format!("reject E[X^{}]: {} = {}, p = {} < {}",
                               i + 1,
                               mean, expected,
                               pvalue, SIG))
@@ -108,6 +112,7 @@ pub fn ks_test_dist<S: Sample<f64>>(name: &str,
     let mut v = range(0, KS_SIZE).map(|_| cdf(dist.sample(&mut rng))).to_owned_vec();
     let pvalue = ks_unif_test(v);
 
+    info!("K-S test {}: p = {}", name, pvalue);
     if pvalue < SIG {
         fail!("{} failed: p = {} < {}", name, pvalue, SIG);
     }
