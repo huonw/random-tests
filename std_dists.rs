@@ -107,7 +107,7 @@ pub fn t_test_mean_var<S: Sample<f64>>(name: &str,
 /// function `cdf`.
 pub fn ks_test_dist<S: Sample<f64>>(name: &str,
                                     mut dist: S,
-                                    cdf: &fn(f64) -> f64) {
+                                    cdf: |f64|-> f64) {
     let mut rng = StdRng::new();
     let mut v = range(0, KS_SIZE).map(|_| cdf(dist.sample(&mut rng))).to_owned_vec();
     let pvalue = ks_unif_test(v);

@@ -29,7 +29,6 @@ pub fn exp_cdf(x: f64) -> f64 {
 }
 
 /// The CDF of the N(0, 1) distribution.
-#[fixed_stack_segment]
 pub fn normal_cdf(x: f64) -> f64 {
     return 0.5 * (1.0 + unsafe { erf(x / Real::sqrt2()) });
 
