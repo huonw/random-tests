@@ -1,5 +1,4 @@
 use std::num;
-use extra::sort;
 
 /// An approximation to the cumulative distribution function of the
 /// Kolmogorov distribution. Note that this approximates in a
@@ -23,7 +22,20 @@ pub fn ks_cdf(statistic: f64) -> f64 {
 /// (asymptotic) Kolmogorov distribution, so this will give most
 /// accurate results for large samples.
 pub fn ks_unif_test(data: &mut [f64]) -> f64 {
-    sort::quick_sort3(data);
+    data.sort_by(|x, y| {
+            // arbitrarily decide that NaNs are larger than everything.
+            if y.is_nan() {
+                Less
+            } else if x.is_nan() {
+                Greater
+            } else if x < y {
+                Less
+            } else if x == y {
+                Equal
+            } else {
+                Greater
+            }
+        });
 
     let n = data.len() as f64;
     let mut sup = 0.0;
