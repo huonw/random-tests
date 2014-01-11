@@ -1,5 +1,6 @@
 /// Distributional tests for distributions in the standard lib
 use std::{num, vec, cmp};
+use std::num::RealExt;
 use std::rand::{Rng, StdRng};
 use std::rand::distributions::Sample;
 use std::rand::distributions::{ChiSquared, Exp, FisherF, Gamma, LogNormal, Normal, StudentT};

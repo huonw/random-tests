@@ -12,6 +12,15 @@ pub fn t_test(mean: f64, std_dev: f64, n: uint, expected: f64) -> f64 {
     2. * normal_cdf(-num::abs(t_stat))
 }
 
+macro_rules! assert_approx_eq {
+    ($lhs:expr, $rhs:expr) => {
+        {
+            let (lhs, rhs) = ($lhs, $rhs);
+            assert!((lhs - rhs).abs() < 1e-4,"assert_approx_eq failed: {} != {}", lhs, rhs);
+        }
+    }
+}
+
 #[test]
 fn test_t_test() {
     // exactly equal means

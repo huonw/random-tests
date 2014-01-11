@@ -1,4 +1,5 @@
 #[crate_type = "lib"];
+#[feature(macro_rules)];
 
 extern mod extra;
 use std::num;
