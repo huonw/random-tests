@@ -1,6 +1,5 @@
 /// Distributional tests for distributions in the standard lib
 use std::{num, vec, cmp};
-use std::num::RealExt;
 use std::rand::{Rng, StdRng};
 use std::rand::distributions::Sample;
 use std::rand::distributions::{ChiSquared, Exp, FisherF, Gamma, LogNormal, Normal, StudentT};
@@ -18,6 +17,10 @@ static EACH_MEAN: uint = 10000;
 static KS_SIZE: uint = 10_000_000;
 
 static NUM_MOMENTS: uint = 3;
+
+extern {
+    fn lgamma(x: f64) -> f64;
+}
 
 /// Compute the first NUM_MOMENTS moments of a sample of size `count`
 /// from `dist` using `rng` as the source of randomness.
@@ -227,7 +230,7 @@ fn test_chi_squared(dof: f64) {
     let mut moments = [0.0, .. NUM_MOMENTS];
     for (i, m) in moments.mut_iter().enumerate() {
         let k = (i + 1) as f64;
-        let log_frac = (k + dof * 0.5).lgamma().n1() - (dof * 0.5).lgamma().n1();
+        let log_frac = unsafe { lgamma(k + dof * 0.5) - lgamma(dof * 0.5) };
         *m = 2f64.pow(&k) * num::exp(log_frac)
     }
     t_test_mean_var(format!("χ²({})", dof),
@@ -252,9 +255,11 @@ fn test_f() {
     let ratio = D2 as f64 / D1 as f64;
     for (i, m) in moments.mut_iter().enumerate() {
         let k = (i + 1) as f64;
-        let log_frac_1 = (D1 as f64 * 0.5 + k).lgamma().n1() - (D1 as f64 * 0.5).lgamma().n1();
-        let log_frac_2 = (D2 as f64 * 0.5 - k).lgamma().n1() - (D2 as f64 * 0.5).lgamma().n1();
-        *m = ratio.pow(&k) * num::exp(log_frac_1 + log_frac_2);
+        unsafe {
+            let log_frac_1 = lgamma(D1 as f64 * 0.5 + k) - lgamma(D1 as f64 * 0.5);
+            let log_frac_2 = lgamma(D2 as f64 * 0.5 - k) - lgamma(D2 as f64 * 0.5);
+            *m = ratio.pow(&k) * num::exp(log_frac_1 + log_frac_2);
+        }
     }
     t_test_mean_var(format!("F({}, {})", D1, D2),
                     FisherF::new(D1 as f64, D2 as f64),
