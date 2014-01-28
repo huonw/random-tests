@@ -231,7 +231,7 @@ fn test_chi_squared(dof: f64) {
     for (i, m) in moments.mut_iter().enumerate() {
         let k = (i + 1) as f64;
         let log_frac = unsafe { lgamma(k + dof * 0.5) - lgamma(dof * 0.5) };
-        *m = 2f64.pow(&k) * num::exp(log_frac)
+        *m = 2f64.powf(&k) * num::exp(log_frac)
     }
     t_test_mean_var(format!("χ²({})", dof),
                     ChiSquared::new(dof),
@@ -258,7 +258,7 @@ fn test_f() {
         unsafe {
             let log_frac_1 = lgamma(D1 as f64 * 0.5 + k) - lgamma(D1 as f64 * 0.5);
             let log_frac_2 = lgamma(D2 as f64 * 0.5 - k) - lgamma(D2 as f64 * 0.5);
-            *m = ratio.pow(&k) * num::exp(log_frac_1 + log_frac_2);
+            *m = ratio.powf(&k) * num::exp(log_frac_1 + log_frac_2);
         }
     }
     t_test_mean_var(format!("F({}, {})", D1, D2),
