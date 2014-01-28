@@ -1,3 +1,4 @@
+#[crate_id="random_test"];
 #[crate_type = "lib"];
 #[feature(macro_rules)];
 
