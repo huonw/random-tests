@@ -2,7 +2,7 @@
 #[crate_type = "lib"];
 #[feature(macro_rules)];
 
-extern mod extra;
+extern crate extra;
 use std::num;
 
 pub mod kolmogorov_smirnov;
@@ -32,7 +32,7 @@ pub fn exp_cdf(x: f64) -> f64 {
 
 /// The CDF of the N(0, 1) distribution.
 pub fn normal_cdf(x: f64) -> f64 {
-    return 0.5 * (1.0 + unsafe { erf(x / Real::sqrt2()) });
+    return 0.5 * (1.0 + unsafe { erf(x / Float::sqrt2()) });
 
     #[link_name = "m"]
     extern {

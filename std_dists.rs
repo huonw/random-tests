@@ -10,7 +10,7 @@ use std::rand::distributions::{RandSample};
 use kolmogorov_smirnov::ks_unif_test;
 use t_test;
 
-pub static SIG: f64 = 0.001;
+pub static SIG: f64 = 0.0005;
 static NUM_MEANS: uint = 10000;
 static EACH_MEAN: uint = 10000;
 

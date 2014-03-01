@@ -1,4 +1,4 @@
-use std::num;
+use std::{num, cmp};
 
 /// An approximation to the cumulative distribution function of the
 /// Kolmogorov distribution. Note that this approximates in a
@@ -12,10 +12,10 @@ pub fn ks_cdf(statistic: f64) -> f64 {
     let mut sum = 0.0;
     // the longer we go the more accurate we are.
     for k in range(1, 10000) {
-        let y = (2 * k - 1) as f64 * Real::pi() / statistic;
+        let y = (2 * k - 1) as f64 * Float::pi() / statistic;
         sum += num::exp(-y * y / 8.)
     }
-    1.0 - sum * num::sqrt(2.0 * Real::pi()) / statistic
+    1.0 - sum * num::sqrt(2.0 * Float::pi()) / statistic
 }
 
 /// Test `data` for uniformity, returning a p-value based on the
@@ -40,8 +40,8 @@ pub fn ks_unif_test(data: &mut [f64]) -> f64 {
     let n = data.len() as f64;
     let mut sup = 0.0;
     for (i, &x) in data.iter().enumerate() {
-        sup = num::max(sup,
-                       num::max(num::abs(i as f64 / n - x),
+        sup = cmp::max(sup,
+                       cmp::max(num::abs(i as f64 / n - x),
                                 num::abs((i + 1) as f64 / n - x)));
     }
     ks_cdf(num::sqrt(n) * sup)
