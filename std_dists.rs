@@ -1,11 +1,14 @@
 /// Distributional tests for distributions in the standard lib
-use std::{num, vec, cmp};
-use std::rand::{Rng, StdRng};
-use std::rand::distributions::Sample;
-use std::rand::distributions::{ChiSquared, Exp, FisherF, Gamma, LogNormal, Normal, StudentT};
+use std::num;
+#[cfg(test)]
+use std::{vec, cmp};
+use rand::{Rng, StdRng};
+use rand::distributions::Sample;
+#[cfg(test)]
+use rand::distributions::{ChiSquared, Exp, FisherF, Gamma, LogNormal, Normal, StudentT};
 
 #[cfg(test)]
-use std::rand::distributions::{RandSample};
+use rand::distributions::{RandSample};
 
 use kolmogorov_smirnov::ks_unif_test;
 use t_test;
@@ -19,6 +22,7 @@ static KS_SIZE: uint = 10_000_000;
 static NUM_MOMENTS: uint = 3;
 
 extern {
+    #[cfg(test)]
     fn lgamma(x: f64) -> f64;
 }
 
@@ -164,6 +168,7 @@ fn t_test_norm() {
                     moments);
 }
 
+#[cfg(test)]
 fn test_gamma(shape: f64, scale: f64) {
     let mut moments = [0., .. NUM_MOMENTS];
     let mut current_moment = 1.;
@@ -226,6 +231,7 @@ fn t_test_log_normal() {
                     moments)
 }
 
+#[cfg(test)]
 fn test_chi_squared(dof: f64) {
     let mut moments = [0.0, .. NUM_MOMENTS];
     for (i, m) in moments.mut_iter().enumerate() {

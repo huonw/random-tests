@@ -2,6 +2,7 @@
 #[crate_type = "lib"];
 #[feature(macro_rules)];
 
+extern crate rand;
 extern crate extra;
 use std::num;
 
