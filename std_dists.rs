@@ -1,7 +1,7 @@
 /// Distributional tests for distributions in the standard lib
 use std::num;
 #[cfg(test)]
-use std::{vec, cmp};
+use std::cmp;
 use rand::{Rng, StdRng};
 use rand::distributions::Sample;
 #[cfg(test)]
@@ -118,8 +118,8 @@ pub fn ks_test_dist<S: Sample<f64>>(name: &str,
                                     mut dist: S,
                                     cdf: |f64|-> f64) {
     let mut rng = StdRng::new();
-    let mut v = range(0, KS_SIZE).map(|_| cdf(dist.sample(&mut rng))).to_owned_vec();
-    let pvalue = ks_unif_test(v);
+    let mut v: Vec<f64> = range(0, KS_SIZE).map(|_| cdf(dist.sample(&mut rng))).collect();
+    let pvalue = ks_unif_test(v.as_mut_slice());
 
     info!("K-S test {}: p = {}", name, pvalue);
     if pvalue < SIG {
@@ -201,7 +201,7 @@ fn t_test_t() {
     static DOF: uint = 100;
 
     // k-th moments are only defined for k < dof
-    let mut moments = vec::from_elem(cmp::min(NUM_MOMENTS, DOF - 1), 0.0);
+    let mut moments = Vec::from_elem(cmp::min(NUM_MOMENTS, DOF - 1), 0.0);
     let mut current_moment = 1.;
     for (i, m) in moments.mut_iter().enumerate() {
         // k even:
@@ -216,7 +216,7 @@ fn t_test_t() {
     }
     t_test_mean_var(format!("StudentT({})", DOF),
                     StudentT::new(DOF as f64),
-                    moments)
+                    moments.as_slice())
 }
 
 #[test]
@@ -256,7 +256,7 @@ fn t_test_chi_squared_large() {
 fn test_f() {
     static D1: uint = 10;
     static D2: uint = 20;
-    let mut moments = vec::from_elem(cmp::min(NUM_MOMENTS, (D2 - 1) / 2), 0.0);
+    let mut moments = Vec::from_elem(cmp::min(NUM_MOMENTS, (D2 - 1) / 2), 0.0);
 
     let ratio = D2 as f64 / D1 as f64;
     for (i, m) in moments.mut_iter().enumerate() {
@@ -269,7 +269,7 @@ fn test_f() {
     }
     t_test_mean_var(format!("F({}, {})", D1, D2),
                     FisherF::new(D1 as f64, D2 as f64),
-                    moments)
+                    moments.as_slice())
 }
 #[test]
 fn ks_test_unif() {

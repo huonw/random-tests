@@ -1,4 +1,4 @@
-use std::{num, cmp};
+use std::{num};
 
 /// An approximation to the cumulative distribution function of the
 /// Kolmogorov distribution. Note that this approximates in a
@@ -38,11 +38,9 @@ pub fn ks_unif_test(data: &mut [f64]) -> f64 {
         });
 
     let n = data.len() as f64;
-    let mut sup = 0.0;
+    let mut sup = 0.0f64;
     for (i, &x) in data.iter().enumerate() {
-        sup = cmp::max(sup,
-                       cmp::max(num::abs(i as f64 / n - x),
-                                num::abs((i + 1) as f64 / n - x)));
+        sup = sup.max(num::abs(i as f64 / n - x).max(num::abs((i + 1) as f64 / n - x)));
     }
     ks_cdf(num::sqrt(n) * sup)
 }

@@ -1,9 +1,10 @@
 #[crate_id="random_test"];
 #[crate_type = "lib"];
-#[feature(macro_rules)];
+#[feature(macro_rules, phase)];
+
+#[phase(syntax, link)] extern crate log;
 
 extern crate rand;
-extern crate extra;
 use std::num;
 
 pub mod kolmogorov_smirnov;
