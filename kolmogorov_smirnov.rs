@@ -13,9 +13,9 @@ pub fn ks_cdf(statistic: f64) -> f64 {
     // the longer we go the more accurate we are.
     for k in range(1, 10000) {
         let y = (2 * k - 1) as f64 * Float::pi() / statistic;
-        sum += num::exp(-y * y / 8.)
+        sum += (-y * y / 8.).exp()
     }
-    1.0 - sum * num::sqrt(2.0 * Float::pi()) / statistic
+    1.0 - sum * (2.0f64 * Float::pi()).sqrt() / statistic
 }
 
 /// Test `data` for uniformity, returning a p-value based on the
@@ -42,5 +42,5 @@ pub fn ks_unif_test(data: &mut [f64]) -> f64 {
     for (i, &x) in data.iter().enumerate() {
         sup = sup.max(num::abs(i as f64 / n - x).max(num::abs((i + 1) as f64 / n - x)));
     }
-    ks_cdf(num::sqrt(n) * sup)
+    ks_cdf(n.sqrt() * sup)
 }

@@ -1,11 +1,10 @@
-#[crate_id="random_test"];
-#[crate_type = "lib"];
-#[feature(macro_rules, phase)];
+#![crate_id="random_test"]
+#![crate_type = "lib"]
+#![feature(macro_rules, phase)]
 
 #[phase(syntax, link)] extern crate log;
 
 extern crate rand;
-use std::num;
 
 pub mod kolmogorov_smirnov;
 pub mod t_test;
@@ -28,7 +27,7 @@ pub fn exp_cdf(x: f64) -> f64 {
     if x < 0. {
         0.
     } else {
-        1. - num::exp(-x)
+        1. - (-x).exp()
     }
 }
 

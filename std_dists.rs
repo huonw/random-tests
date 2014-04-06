@@ -1,5 +1,4 @@
 /// Distributional tests for distributions in the standard lib
-use std::num;
 #[cfg(test)]
 use std::cmp;
 use rand::{Rng, StdRng};
@@ -54,7 +53,7 @@ fn moments<S: Sample<f64>, R: Rng>(rng: &mut R,
 fn mean_var_of_moments<S: Sample<f64>>(dist: &mut S,
                                        each_mean: uint,
                                        num_means: uint) -> [(f64, f64), .. NUM_MOMENTS] {
-    let mut rng = StdRng::new();
+    let mut rng = StdRng::new().unwrap();
 
     let mut mean_vars = [(0., 0.), .. NUM_MOMENTS];
 
@@ -92,7 +91,7 @@ pub fn t_test_mean_var<S: Sample<f64>>(name: &str,
     let moments = mean_var_of_moments(&mut dist, EACH_MEAN, NUM_MEANS);
     let mut msgs = ~[];
     for (i, (&(mean, var), &expected)) in moments.iter().zip(expected.iter()).enumerate() {
-        let pvalue = t_test::t_test(mean, num::sqrt(var), NUM_MEANS, expected);
+        let pvalue = t_test::t_test(mean, var.sqrt(), NUM_MEANS, expected);
 
         info!("test {}: E[X^{}] = {} (expect {}), p = {}",
               name, i + 1,
@@ -117,7 +116,7 @@ pub fn t_test_mean_var<S: Sample<f64>>(name: &str,
 pub fn ks_test_dist<S: Sample<f64>>(name: &str,
                                     mut dist: S,
                                     cdf: |f64|-> f64) {
-    let mut rng = StdRng::new();
+    let mut rng = StdRng::new().unwrap();
     let mut v: Vec<f64> = range(0, KS_SIZE).map(|_| cdf(dist.sample(&mut rng))).collect();
     let pvalue = ks_unif_test(v.as_mut_slice());
 
@@ -224,7 +223,7 @@ fn t_test_log_normal() {
     let mut moments = [0.0, .. NUM_MOMENTS];
     for (i, m) in moments.mut_iter().enumerate() {
         let k = (i + 1) as f64;
-        *m = num::exp(0.5 * k * k);
+        *m = (0.5 * k * k).exp();
     }
     t_test_mean_var("ln N(0, 1)",
                     LogNormal::new(0.0, 1.0),
@@ -237,7 +236,7 @@ fn test_chi_squared(dof: f64) {
     for (i, m) in moments.mut_iter().enumerate() {
         let k = (i + 1) as f64;
         let log_frac = unsafe { lgamma(k + dof * 0.5) - lgamma(dof * 0.5) };
-        *m = 2f64.powf(&k) * num::exp(log_frac)
+        *m = 2f64.powf(&k) * log_frac.exp()
     }
     t_test_mean_var(format!("χ²({})", dof),
                     ChiSquared::new(dof),
@@ -264,7 +263,7 @@ fn test_f() {
         unsafe {
             let log_frac_1 = lgamma(D1 as f64 * 0.5 + k) - lgamma(D1 as f64 * 0.5);
             let log_frac_2 = lgamma(D2 as f64 * 0.5 - k) - lgamma(D2 as f64 * 0.5);
-            *m = ratio.powf(&k) * num::exp(log_frac_1 + log_frac_2);
+            *m = ratio.powf(&k) * (log_frac_1 + log_frac_2).exp();
         }
     }
     t_test_mean_var(format!("F({}, {})", D1, D2),

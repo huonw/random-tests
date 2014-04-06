@@ -7,7 +7,7 @@ use normal_cdf;
 /// for ease of computation, and so should really only be used for
 /// large `n`.
 pub fn t_test(mean: f64, std_dev: f64, n: uint, expected: f64) -> f64 {
-    let t_stat = (mean - expected) / std_dev * num::sqrt(n as f64);
+    let t_stat = (mean - expected) / std_dev * (n as f64).sqrt();
     // two sided
     2. * normal_cdf(-num::abs(t_stat))
 }
