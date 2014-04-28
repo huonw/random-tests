@@ -89,7 +89,7 @@ pub fn t_test_mean_var<S: Sample<f64>>(name: &str,
     assert!(expected.len() >= NUM_MOMENTS);
 
     let moments = mean_var_of_moments(&mut dist, EACH_MEAN, NUM_MEANS);
-    let mut msgs = ~[];
+    let mut msgs = vec![];
     for (i, (&(mean, var), &expected)) in moments.iter().zip(expected.iter()).enumerate() {
         let pvalue = t_test::t_test(mean, var.sqrt(), NUM_MEANS, expected);
 
@@ -236,7 +236,7 @@ fn test_chi_squared(dof: f64) {
     for (i, m) in moments.mut_iter().enumerate() {
         let k = (i + 1) as f64;
         let log_frac = unsafe { lgamma(k + dof * 0.5) - lgamma(dof * 0.5) };
-        *m = 2f64.powf(&k) * log_frac.exp()
+        *m = 2f64.powf(k) * log_frac.exp()
     }
     t_test_mean_var(format!("χ²({})", dof),
                     ChiSquared::new(dof),
@@ -263,7 +263,7 @@ fn test_f() {
         unsafe {
             let log_frac_1 = lgamma(D1 as f64 * 0.5 + k) - lgamma(D1 as f64 * 0.5);
             let log_frac_2 = lgamma(D2 as f64 * 0.5 - k) - lgamma(D2 as f64 * 0.5);
-            *m = ratio.powf(&k) * (log_frac_1 + log_frac_2).exp();
+            *m = ratio.powf(k) * (log_frac_1 + log_frac_2).exp();
         }
     }
     t_test_mean_var(format!("F({}, {})", D1, D2),
