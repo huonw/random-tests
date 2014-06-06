@@ -4,8 +4,6 @@
 
 #[phase(syntax, link)] extern crate log;
 
-extern crate rand;
-
 pub mod kolmogorov_smirnov;
 pub mod t_test;
 

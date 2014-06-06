@@ -1,13 +1,13 @@
 /// Distributional tests for distributions in the standard lib
 #[cfg(test)]
 use std::cmp;
-use rand::{Rng, StdRng};
-use rand::distributions::Sample;
+use std::rand::{Rng, StdRng};
+use std::rand::distributions::Sample;
 #[cfg(test)]
-use rand::distributions::{ChiSquared, Exp, FisherF, Gamma, LogNormal, Normal, StudentT};
+use std::rand::distributions::{ChiSquared, Exp, FisherF, Gamma, LogNormal, Normal, StudentT};
 
 #[cfg(test)]
-use rand::distributions::{RandSample};
+use std::rand::distributions::{RandSample};
 
 use kolmogorov_smirnov::ks_unif_test;
 use t_test;
@@ -176,7 +176,7 @@ fn test_gamma(shape: f64, scale: f64) {
         current_moment *= scale * (shape + i as f64);
         *m = current_moment
     }
-    t_test_mean_var(format!("Gamma({}, {})", shape, scale),
+    t_test_mean_var(format!("Gamma({}, {})", shape, scale).as_slice(),
                     Gamma::new(shape, scale),
                     moments)
 }
@@ -213,7 +213,7 @@ fn t_test_t() {
             *m = current_moment;
         }
     }
-    t_test_mean_var(format!("StudentT({})", DOF),
+    t_test_mean_var(format!("StudentT({})", DOF).as_slice(),
                     StudentT::new(DOF as f64),
                     moments.as_slice())
 }
@@ -238,7 +238,7 @@ fn test_chi_squared(dof: f64) {
         let log_frac = unsafe { lgamma(k + dof * 0.5) - lgamma(dof * 0.5) };
         *m = 2f64.powf(k) * log_frac.exp()
     }
-    t_test_mean_var(format!("χ²({})", dof),
+    t_test_mean_var(format!("χ²({})", dof).as_slice(),
                     ChiSquared::new(dof),
                     moments)
 }
@@ -266,7 +266,7 @@ fn test_f() {
             *m = ratio.powf(k) * (log_frac_1 + log_frac_2).exp();
         }
     }
-    t_test_mean_var(format!("F({}, {})", D1, D2),
+    t_test_mean_var(format!("F({}, {})", D1, D2).as_slice(),
                     FisherF::new(D1 as f64, D2 as f64),
                     moments.as_slice())
 }
