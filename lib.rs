@@ -2,7 +2,7 @@
 #![crate_type = "lib"]
 #![feature(macro_rules, phase)]
 
-#[phase(syntax, link)] extern crate log;
+#[phase(plugin, link)] extern crate log;
 
 pub mod kolmogorov_smirnov;
 pub mod t_test;
