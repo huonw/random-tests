@@ -11,7 +11,7 @@ pub fn ks_cdf(statistic: f64) -> f64 {
 
     let mut sum = 0.0;
     // the longer we go the more accurate we are.
-    for k in range(1, 10000) {
+    for k in range(0u, 10000) {
         let y = (2 * k - 1) as f64 * Float::pi() / statistic;
         sum += (-y * y / 8.).exp()
     }
