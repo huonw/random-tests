@@ -34,7 +34,7 @@ fn moments<S: Sample<f64>, R: Rng>(rng: &mut R,
     for _ in range(0, count) {
         let v = dist.sample(rng);
         let mut x = v;
-        for m in moms.mut_iter() {
+        for m in moms.iter_mut() {
             *m = x;
             x *= v;
         }
@@ -60,7 +60,7 @@ fn mean_var_of_moments<S: Sample<f64>>(dist: &mut S,
     for _ in range(0, each_mean) {
         let mom = moments(&mut rng, dist, each_mean);
 
-        for (&(ref mut s, ref mut s2), &v) in mean_vars.mut_iter().zip(mom.iter()) {
+        for (&(ref mut s, ref mut s2), &v) in mean_vars.iter_mut().zip(mom.iter()) {
             *s += v;
             *s2 += v * v;
         }
@@ -68,7 +68,7 @@ fn mean_var_of_moments<S: Sample<f64>>(dist: &mut S,
     // centralise the EX and EX^2 moments for each of the moment
     // estimators of the distribution.
     let n = num_means as f64;
-    for &(ref mut s, ref mut s2) in mean_vars.mut_iter() {
+    for &(ref mut s, ref mut s2) in mean_vars.iter_mut() {
         let mu = *s / n;
         let var = (*s2 - *s * mu) / (n - 1.);
 
@@ -129,7 +129,7 @@ pub fn ks_test_dist<S: Sample<f64>>(name: &str,
 #[test]
 fn t_test_unif() {
     let mut moments = [0f64, .. NUM_MOMENTS];
-    for (i, m) in moments.mut_iter().enumerate() {
+    for (i, m) in moments.iter_mut().enumerate() {
         // for U(0, 1), E[X^k] = 1 / (k + 1).
         *m = 1. / (i as f64 + 2.);
     }
@@ -142,7 +142,7 @@ fn t_test_unif() {
 fn t_test_exp() {
     let mut moments = [0f64, .. NUM_MOMENTS];
     let mut prod = 1.;
-    for (i, m) in moments.mut_iter().enumerate() {
+    for (i, m) in moments.iter_mut().enumerate() {
         // for Exp(1), E[X^k] = k!
         prod *= i as f64 + 1.;
         *m = prod
@@ -154,7 +154,7 @@ fn t_test_exp() {
 fn t_test_norm() {
     let mut moments = [0f64, .. NUM_MOMENTS];
     let mut prod = 1.;
-    for (i, m) in moments.mut_iter().enumerate() {
+    for (i, m) in moments.iter_mut().enumerate() {
         // for N(0, 1), E[X^odd] = 0, and E[X^k] = k!! (product of odd
         // numbers up to k) (k even).
         let k = i + 1;
@@ -171,7 +171,7 @@ fn t_test_norm() {
 fn test_gamma(shape: f64, scale: f64) {
     let mut moments = [0f64, .. NUM_MOMENTS];
     let mut current_moment = 1.;
-    for (i, m) in moments.mut_iter().enumerate() {
+    for (i, m) in moments.iter_mut().enumerate() {
         // E[X^k] = scale^k * shape * (shape + 1) * ... * (shape + (k - 1))
         current_moment *= scale * (shape + i as f64);
         *m = current_moment
@@ -202,7 +202,7 @@ fn t_test_t() {
     // k-th moments are only defined for k < dof
     let mut moments = Vec::from_elem(cmp::min(NUM_MOMENTS, DOF - 1), 0.0f64);
     let mut current_moment = 1.;
-    for (i, m) in moments.mut_iter().enumerate() {
+    for (i, m) in moments.iter_mut().enumerate() {
         // k even:
         // E[T^k] = dof^{k/2} [(2 - 1) / (dof - 2)] * .. * [(2(k/2) - 1)/(dof - 2(k/2))]
         // k odd: E[T^k] = 0
@@ -221,7 +221,7 @@ fn t_test_t() {
 #[test]
 fn t_test_log_normal() {
     let mut moments = [0.0f64, .. NUM_MOMENTS];
-    for (i, m) in moments.mut_iter().enumerate() {
+    for (i, m) in moments.iter_mut().enumerate() {
         let k = (i + 1) as f64;
         *m = (0.5 * k * k).exp();
     }
@@ -233,7 +233,7 @@ fn t_test_log_normal() {
 #[cfg(test)]
 fn test_chi_squared(dof: f64) {
     let mut moments = [0.0f64, .. NUM_MOMENTS];
-    for (i, m) in moments.mut_iter().enumerate() {
+    for (i, m) in moments.iter_mut().enumerate() {
         let k = (i + 1) as f64;
         let log_frac = unsafe { lgamma(k + dof * 0.5) - lgamma(dof * 0.5) };
         *m = 2f64.powf(k) * log_frac.exp()
@@ -258,7 +258,7 @@ fn test_f() {
     let mut moments = Vec::from_elem(cmp::min(NUM_MOMENTS, (D2 - 1) / 2), 0.0f64);
 
     let ratio = D2 as f64 / D1 as f64;
-    for (i, m) in moments.mut_iter().enumerate() {
+    for (i, m) in moments.iter_mut().enumerate() {
         let k = (i + 1) as f64;
         unsafe {
             let log_frac_1 = lgamma(D1 as f64 * 0.5 + k) - lgamma(D1 as f64 * 0.5);
