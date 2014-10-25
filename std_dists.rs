@@ -12,13 +12,13 @@ use std::rand::distributions::{RandSample};
 use kolmogorov_smirnov::ks_unif_test;
 use t_test;
 
-pub static SIG: f64 = 0.0005;
-static NUM_MEANS: uint = 10000;
-static EACH_MEAN: uint = 10000;
+pub const SIG: f64 = 0.0005;
+const NUM_MEANS: uint = 10000;
+const EACH_MEAN: uint = 10000;
 
-static KS_SIZE: uint = 10_000_000;
+const KS_SIZE: uint = 10_000_000;
 
-static NUM_MOMENTS: uint = 3;
+const NUM_MOMENTS: uint = 3;
 
 extern {
     #[cfg(test)]
@@ -197,7 +197,7 @@ fn t_test_gamma_very_large() { test_gamma(1000., 5.) }
 
 #[test]
 fn t_test_t() {
-    static DOF: uint = 100;
+    const DOF: uint = 100;
 
     // k-th moments are only defined for k < dof
     let mut moments = Vec::from_elem(cmp::min(NUM_MOMENTS, DOF - 1), 0.0f64);
@@ -253,8 +253,8 @@ fn t_test_chi_squared_large() {
 
 #[test]
 fn test_f() {
-    static D1: uint = 10;
-    static D2: uint = 20;
+    const D1: uint = 10;
+    const D2: uint = 20;
     let mut moments = Vec::from_elem(cmp::min(NUM_MOMENTS, (D2 - 1) / 2), 0.0f64);
 
     let ratio = D2 as f64 / D1 as f64;
