@@ -80,7 +80,7 @@ fn mean_var_of_moments<S: Sample<f64>>(dist: &mut S,
 }
 
 /// Perform a t-test for the moments of `dist` being equal to the
-/// values in `expected`. Fail!s when the difference significant at
+/// values in `expected`. Panic!s when the difference significant at
 /// the `SIG` level. (Note: this performs no corrections for multiple
 /// testing)
 pub fn t_test_mean_var<S: Sample<f64>>(name: &str,
@@ -106,7 +106,7 @@ pub fn t_test_mean_var<S: Sample<f64>>(name: &str,
 
     }
     if !msgs.is_empty() {
-        fail!("{} failed: {}", name, msgs.connect(", "))
+        panic!("{} failed: {}", name, msgs.connect(", "))
     }
 }
 
@@ -122,7 +122,7 @@ pub fn ks_test_dist<S: Sample<f64>>(name: &str,
 
     info!("K-S test {}: p = {}", name, pvalue);
     if pvalue < SIG {
-        fail!("{} failed: p = {} < {}", name, pvalue, SIG);
+        panic!("{} failed: p = {} < {}", name, pvalue, SIG);
     }
 }
 
