@@ -4,6 +4,8 @@
 
 #[phase(plugin, link)] extern crate log;
 
+use std::num::Float;
+
 pub mod kolmogorov_smirnov;
 pub mod t_test;
 

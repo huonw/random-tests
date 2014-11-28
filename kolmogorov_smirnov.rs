@@ -1,4 +1,5 @@
-use std::{num};
+use std::num::{Float, FloatMath};
+use std::f64;
 
 /// An approximation to the cumulative distribution function of the
 /// Kolmogorov distribution. Note that this approximates in a
@@ -12,10 +13,10 @@ pub fn ks_cdf(statistic: f64) -> f64 {
     let mut sum = 0.0;
     // the longer we go the more accurate we are.
     for k in range(0u, 10000) {
-        let y = (2 * k - 1) as f64 * Float::pi() / statistic;
+        let y = (2 * k - 1) as f64 * f64::consts::PI / statistic;
         sum += (-y * y / 8.).exp()
     }
-    1.0 - sum * (2.0f64 * Float::pi()).sqrt() / statistic
+    1.0 - sum * (2.0f64 * f64::consts::PI).sqrt() / statistic
 }
 
 /// Test `data` for uniformity, returning a p-value based on the
@@ -40,7 +41,7 @@ pub fn ks_unif_test(data: &mut [f64]) -> f64 {
     let n = data.len() as f64;
     let mut sup = 0.0f64;
     for (i, &x) in data.iter().enumerate() {
-        sup = sup.max(num::abs(i as f64 / n - x).max(num::abs((i + 1) as f64 / n - x)));
+        sup = sup.max((i as f64 / n - x).abs().max(((i + 1) as f64 / n - x).abs()));
     }
     ks_cdf(n.sqrt() * sup)
 }

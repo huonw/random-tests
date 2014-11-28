@@ -1,4 +1,4 @@
-use std::num;
+use std::num::Float;
 use normal_cdf;
 
 /// Perform a two-sided t-test for `mean == expected` based on a
@@ -9,7 +9,7 @@ use normal_cdf;
 pub fn t_test(mean: f64, std_dev: f64, n: uint, expected: f64) -> f64 {
     let t_stat = (mean - expected) / std_dev * (n as f64).sqrt();
     // two sided
-    2. * normal_cdf(-num::abs(t_stat))
+    2. * normal_cdf(-t_stat.abs())
 }
 
 macro_rules! assert_approx_eq {

@@ -1,6 +1,7 @@
 /// Distributional tests for distributions in the standard lib
 #[cfg(test)]
 use std::cmp;
+use std::num::Float;
 use std::rand::{Rng, StdRng};
 use std::rand::distributions::Sample;
 #[cfg(test)]
@@ -135,7 +136,7 @@ fn t_test_unif() {
     }
 
     t_test_mean_var("U(0,1)", RandSample::<f64>,
-                    moments);
+                    &moments);
 }
 
 #[test]
@@ -148,7 +149,7 @@ fn t_test_exp() {
         *m = prod
     }
     t_test_mean_var("Exp(1)", Exp::new(1.0),
-                    moments);
+                    &moments);
 }
 #[test]
 fn t_test_norm() {
@@ -164,7 +165,7 @@ fn t_test_norm() {
         }
     }
     t_test_mean_var("N(0, 1)", Normal::new(0.0, 1.0),
-                    moments);
+                    &moments);
 }
 
 #[cfg(test)]
@@ -178,7 +179,7 @@ fn test_gamma(shape: f64, scale: f64) {
     }
     t_test_mean_var(format!("Gamma({}, {})", shape, scale).as_slice(),
                     Gamma::new(shape, scale),
-                    moments)
+                    &moments)
 }
 // separate to get fine-grained failures/parallelism.
 #[test]
@@ -227,7 +228,7 @@ fn t_test_log_normal() {
     }
     t_test_mean_var("ln N(0, 1)",
                     LogNormal::new(0.0, 1.0),
-                    moments)
+                    &moments)
 }
 
 #[cfg(test)]
@@ -240,7 +241,7 @@ fn test_chi_squared(dof: f64) {
     }
     t_test_mean_var(format!("χ²({})", dof).as_slice(),
                     ChiSquared::new(dof),
-                    moments)
+                    &moments)
 }
 #[test]
 fn t_test_chi_squared_one() {
