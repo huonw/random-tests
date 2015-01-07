@@ -10,6 +10,8 @@ use std::rand::distributions::{ChiSquared, Exp, FisherF, Gamma, LogNormal, Norma
 #[cfg(test)]
 use std::rand::distributions::{RandSample};
 
+use std::iter::repeat;
+
 use kolmogorov_smirnov::ks_unif_test;
 use t_test;
 
@@ -29,8 +31,8 @@ extern {
 /// Compute the first NUM_MOMENTS moments of a sample of size `count`
 /// from `dist` using `rng` as the source of randomness.
 fn moments<S: Sample<f64>, R: Rng>(rng: &mut R,
-                                   dist: &mut S, count: uint) -> [f64, .. NUM_MOMENTS] {
-    let mut moms = [0., .. NUM_MOMENTS];
+                                   dist: &mut S, count: uint) -> [f64; NUM_MOMENTS] {
+    let mut moms = [0.; NUM_MOMENTS];
 
     for _ in range(0, count) {
         let v = dist.sample(rng);
@@ -53,10 +55,10 @@ fn moments<S: Sample<f64>, R: Rng>(rng: &mut R,
 /// estimators respectively.
 fn mean_var_of_moments<S: Sample<f64>>(dist: &mut S,
                                        each_mean: uint,
-                                       num_means: uint) -> [(f64, f64), .. NUM_MOMENTS] {
+                                       num_means: uint) -> [(f64, f64); NUM_MOMENTS] {
     let mut rng = StdRng::new().unwrap();
 
-    let mut mean_vars = [(0f64, 0f64), .. NUM_MOMENTS];
+    let mut mean_vars = [(0f64, 0f64); NUM_MOMENTS];
 
     for _ in range(0, each_mean) {
         let mom = moments(&mut rng, dist, each_mean);
@@ -129,7 +131,7 @@ pub fn ks_test_dist<S: Sample<f64>>(name: &str,
 
 #[test]
 fn t_test_unif() {
-    let mut moments = [0f64, .. NUM_MOMENTS];
+    let mut moments = [0f64; NUM_MOMENTS];
     for (i, m) in moments.iter_mut().enumerate() {
         // for U(0, 1), E[X^k] = 1 / (k + 1).
         *m = 1. / (i as f64 + 2.);
@@ -141,7 +143,7 @@ fn t_test_unif() {
 
 #[test]
 fn t_test_exp() {
-    let mut moments = [0f64, .. NUM_MOMENTS];
+    let mut moments = [0f64; NUM_MOMENTS];
     let mut prod = 1.;
     for (i, m) in moments.iter_mut().enumerate() {
         // for Exp(1), E[X^k] = k!
@@ -153,7 +155,7 @@ fn t_test_exp() {
 }
 #[test]
 fn t_test_norm() {
-    let mut moments = [0f64, .. NUM_MOMENTS];
+    let mut moments = [0f64; NUM_MOMENTS];
     let mut prod = 1.;
     for (i, m) in moments.iter_mut().enumerate() {
         // for N(0, 1), E[X^odd] = 0, and E[X^k] = k!! (product of odd
@@ -170,7 +172,7 @@ fn t_test_norm() {
 
 #[cfg(test)]
 fn test_gamma(shape: f64, scale: f64) {
-    let mut moments = [0f64, .. NUM_MOMENTS];
+    let mut moments = [0f64; NUM_MOMENTS];
     let mut current_moment = 1.;
     for (i, m) in moments.iter_mut().enumerate() {
         // E[X^k] = scale^k * shape * (shape + 1) * ... * (shape + (k - 1))
@@ -201,7 +203,7 @@ fn t_test_t() {
     const DOF: uint = 100;
 
     // k-th moments are only defined for k < dof
-    let mut moments = Vec::from_elem(cmp::min(NUM_MOMENTS, DOF - 1), 0.0f64);
+    let mut moments = repeat(0.0f64).take(cmp::min(NUM_MOMENTS, DOF - 1)).collect::<Vec<_>>();
     let mut current_moment = 1.;
     for (i, m) in moments.iter_mut().enumerate() {
         // k even:
@@ -221,7 +223,7 @@ fn t_test_t() {
 
 #[test]
 fn t_test_log_normal() {
-    let mut moments = [0.0f64, .. NUM_MOMENTS];
+    let mut moments = [0.0f64; NUM_MOMENTS];
     for (i, m) in moments.iter_mut().enumerate() {
         let k = (i + 1) as f64;
         *m = (0.5 * k * k).exp();
@@ -233,7 +235,7 @@ fn t_test_log_normal() {
 
 #[cfg(test)]
 fn test_chi_squared(dof: f64) {
-    let mut moments = [0.0f64, .. NUM_MOMENTS];
+    let mut moments = [0.0f64; NUM_MOMENTS];
     for (i, m) in moments.iter_mut().enumerate() {
         let k = (i + 1) as f64;
         let log_frac = unsafe { lgamma(k + dof * 0.5) - lgamma(dof * 0.5) };
@@ -256,7 +258,7 @@ fn t_test_chi_squared_large() {
 fn test_f() {
     const D1: uint = 10;
     const D2: uint = 20;
-    let mut moments = Vec::from_elem(cmp::min(NUM_MOMENTS, (D2 - 1) / 2), 0.0f64);
+    let mut moments = repeat(0.0f64).take(cmp::min(NUM_MOMENTS, (D2 - 1) / 2)).collect::<Vec<_>>();
 
     let ratio = D2 as f64 / D1 as f64;
     for (i, m) in moments.iter_mut().enumerate() {

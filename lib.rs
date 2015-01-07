@@ -33,7 +33,8 @@ pub fn exp_cdf(x: f64) -> f64 {
 
 /// The CDF of the N(0, 1) distribution.
 pub fn normal_cdf(x: f64) -> f64 {
-    return 0.5 * (1.0 + unsafe { erf(x / Float::sqrt2()) });
+    use std::num::Float;
+    return 0.5 * (1.0 + unsafe { erf(x / 2.0f64.sqrt()) });
 
     #[link_name = "m"]
     extern {

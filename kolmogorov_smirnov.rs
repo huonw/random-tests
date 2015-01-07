@@ -24,19 +24,12 @@ pub fn ks_cdf(statistic: f64) -> f64 {
 /// accurate results for large samples.
 pub fn ks_unif_test(data: &mut [f64]) -> f64 {
     data.sort_by(|x, y| {
-            // arbitrarily decide that NaNs are larger than everything.
-            if y.is_nan() {
-                Less
-            } else if x.is_nan() {
-                Greater
-            } else if x < y {
-                Less
-            } else if x == y {
-                Equal
-            } else {
-                Greater
-            }
-        });
+        // arbitrarily decide that NaNs are larger than everything.
+        x.partial_cmp(y).unwrap_or_else(|| {
+            use std::cmp::Ordering;
+            if y.is_nan() { Ordering::Less } else { Ordering::Greater }
+        })
+    });
 
     let n = data.len() as f64;
     let mut sup = 0.0f64;
