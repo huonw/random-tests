@@ -1,9 +1,6 @@
-before_install:
-  - yes | sudo add-apt-repository ppa:hansjorg/rust
-  - sudo apt-get update
-install:
-  - sudo apt-get install rust-nightly
+sudo: false
+language: rust
 script:
   - rustc lib.rs
-  - rustc --opt-level=3 --test lib.rs -o test-runner
+  - rustc -C opt-level=3 --test lib.rs -o test-runner
   - RUST_LOG=info ./test-runner
