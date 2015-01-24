@@ -16,12 +16,12 @@ use kolmogorov_smirnov::ks_unif_test;
 use t_test;
 
 pub const SIG: f64 = 0.0005;
-const NUM_MEANS: uint = 10000;
-const EACH_MEAN: uint = 10000;
+const NUM_MEANS: usize = 10000;
+const EACH_MEAN: usize = 10000;
 
-const KS_SIZE: uint = 10_000_000;
+const KS_SIZE: usize = 10_000_000;
 
-const NUM_MOMENTS: uint = 3;
+const NUM_MOMENTS: usize = 3;
 
 extern {
     #[cfg(test)]
@@ -31,7 +31,7 @@ extern {
 /// Compute the first NUM_MOMENTS moments of a sample of size `count`
 /// from `dist` using `rng` as the source of randomness.
 fn moments<S: Sample<f64>, R: Rng>(rng: &mut R,
-                                   dist: &mut S, count: uint) -> [f64; NUM_MOMENTS] {
+                                   dist: &mut S, count: usize) -> [f64; NUM_MOMENTS] {
     let mut moms = [0.; NUM_MOMENTS];
 
     for _ in range(0, count) {
@@ -54,8 +54,8 @@ fn moments<S: Sample<f64>, R: Rng>(rng: &mut R,
 /// Returns sample (mean, variance) for the mean and variance
 /// estimators respectively.
 fn mean_var_of_moments<S: Sample<f64>>(dist: &mut S,
-                                       each_mean: uint,
-                                       num_means: uint) -> [(f64, f64); NUM_MOMENTS] {
+                                       each_mean: usize,
+                                       num_means: usize) -> [(f64, f64); NUM_MOMENTS] {
     let mut rng = StdRng::new().unwrap();
 
     let mut mean_vars = [(0f64, 0f64); NUM_MOMENTS];
@@ -63,7 +63,7 @@ fn mean_var_of_moments<S: Sample<f64>>(dist: &mut S,
     for _ in range(0, each_mean) {
         let mom = moments(&mut rng, dist, each_mean);
 
-        for (&(ref mut s, ref mut s2), &v) in mean_vars.iter_mut().zip(mom.iter()) {
+        for (&mut (ref mut s, ref mut s2), &v) in mean_vars.iter_mut().zip(mom.iter()) {
             *s += v;
             *s2 += v * v;
         }
@@ -71,7 +71,7 @@ fn mean_var_of_moments<S: Sample<f64>>(dist: &mut S,
     // centralise the EX and EX^2 moments for each of the moment
     // estimators of the distribution.
     let n = num_means as f64;
-    for &(ref mut s, ref mut s2) in mean_vars.iter_mut() {
+    for &mut (ref mut s, ref mut s2) in mean_vars.iter_mut() {
         let mu = *s / n;
         let var = (*s2 - *s * mu) / (n - 1.);
 
@@ -116,9 +116,9 @@ pub fn t_test_mean_var<S: Sample<f64>>(name: &str,
 /// Perform a Kolmogorov-Smirnov test that samples from `dist` are
 /// actually from the distribution with the cumulative distribution
 /// function `cdf`.
-pub fn ks_test_dist<S: Sample<f64>>(name: &str,
+pub fn ks_test_dist<S: Sample<f64>, F: FnMut(f64) -> f64>(name: &str,
                                     mut dist: S,
-                                    cdf: |f64|-> f64) {
+                                    mut cdf: F) {
     let mut rng = StdRng::new().unwrap();
     let mut v: Vec<f64> = range(0, KS_SIZE).map(|_| cdf(dist.sample(&mut rng))).collect();
     let pvalue = ks_unif_test(v.as_mut_slice());
@@ -200,7 +200,7 @@ fn t_test_gamma_very_large() { test_gamma(1000., 5.) }
 
 #[test]
 fn t_test_t() {
-    const DOF: uint = 100;
+    const DOF: usize = 100;
 
     // k-th moments are only defined for k < dof
     let mut moments = repeat(0.0f64).take(cmp::min(NUM_MOMENTS, DOF - 1)).collect::<Vec<_>>();
@@ -256,8 +256,8 @@ fn t_test_chi_squared_large() {
 
 #[test]
 fn test_f() {
-    const D1: uint = 10;
-    const D2: uint = 20;
+    const D1: usize = 10;
+    const D2: usize = 20;
     let mut moments = repeat(0.0f64).take(cmp::min(NUM_MOMENTS, (D2 - 1) / 2)).collect::<Vec<_>>();
 
     let ratio = D2 as f64 / D1 as f64;

@@ -1,8 +1,7 @@
 #![crate_name="random_test"]
 #![crate_type = "lib"]
-#![feature(macro_rules, phase)]
 
-#[phase(plugin, link)] extern crate log;
+#[macro_use] extern crate log;
 
 use std::num::Float;
 

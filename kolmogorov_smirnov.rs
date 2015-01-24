@@ -1,4 +1,4 @@
-use std::num::{Float, FloatMath};
+use std::num::Float;
 use std::f64;
 
 /// An approximation to the cumulative distribution function of the
@@ -12,7 +12,7 @@ pub fn ks_cdf(statistic: f64) -> f64 {
 
     let mut sum = 0.0;
     // the longer we go the more accurate we are.
-    for k in range(0u, 10000) {
+    for k in range(0, 10000) {
         let y = (2 * k - 1) as f64 * f64::consts::PI / statistic;
         sum += (-y * y / 8.).exp()
     }
